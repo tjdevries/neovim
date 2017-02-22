@@ -652,6 +652,77 @@ Integer nvim_get_color_by_name(String name)
   return name_to_color((uint8_t *)name.data);
 }
 
+/// Get applicable keymaps for the current scope and mode
+///
+/// @param scope Buffer or global
+///   "<buffer>" - Buffer
+///   "" - Global
+/// @param mode The mode in which to serve
+/// @return an array with dictionaries of the same style returned from
+/// `call maparg()`
+Array nvim_get_keymap(String scope, String mode)
+{
+  int mode_num;
+
+  Array maps = ARRAY_DICT_INIT;
+  mode_num = get_map_mode((char_u **)(&mode.data), 0);
+
+  // Try and get one mapping
+  int index;
+
+  mapblock_T *mp;
+
+  for (index = 0; index < 256; index++) {
+    mp = get_maphash(index);
+
+    if (mp == NULL) {
+      continue;
+    }
+
+    while (mp->m_next) {
+      if (mp->m_mode == mode_num) {
+        dict_T *c_dict = dict_alloc();
+        construct_maparg_dict(c_dict, mp, 0);
+        // typval_T type_value = {
+        //   .v_type = VAR_DICT,
+        //   .v_lock = VAR_UNLOCKED,
+        //   .vval.v_dict = c_dict
+        // };
+        // Object object_dict = vim_to_object(&type_value);
+        // ADD(maps, DICTIONARY_OBJ(&object_dict));
+        // ADD(maps, DICTIONARY_OBJ(dict));
+        Dictionary dict = ARRAY_DICT_INIT;
+
+        // keys = mp->m_keys;
+        // keys = replace_termcodes(keys, STRLEN(keys), &keys_buf,
+        //                          true, true, false, CPO_TO_CPO_FLAGS);
+        // check_map(keys, mode_num, false, false, false, &mp, &buffer_local);
+
+        // PUT(dict, "keys", STRING_OBJ(cstr_to_string((char *)keys)));
+        // PUT(dict, "lhs", STRING_OBJ(cstr_to_string((char *)mp->m_keys)));
+        // PUT(dict, "rhs", STRING_OBJ(cstr_to_string((char *)mp->m_str)));
+
+        // mapmode = map_mode_to_chars(mp->m_mode);
+        // PUT(dict, "mode", STRING_OBJ(cstr_to_string(mapmode)));
+
+        // PUT(dict, "noremap", INTEGER_OBJ(mp->m_noremap ? 1L : 0L));
+        // PUT(dict, "expr",    INTEGER_OBJ(mp->m_expr    ? 1L : 0L));
+        // PUT(dict, "silent",  INTEGER_OBJ(mp->m_silent  ? 1L : 0L));
+        // PUT(dict, "sid",     INTEGER_OBJ((long)mp->m_script_ID));
+        // PUT(dict, "buffer",  INTEGER_OBJ((long)buffer_local));
+        // PUT(dict, "nowait",  INTEGER_OBJ(mp->m_nowait  ? 1L : 0L));
+
+        // // PUT(dict, "lhs", STRING_OBJ(cstr_to_string((char *)mp->m_keys)));
+        ADD(maps, DICTIONARY_OBJ(dict));
+      }
+
+      mp = mp->m_next;
+    }
+  }
+
+  return maps;
+}
+
 Dictionary nvim_get_color_map(void)
 {
   Dictionary colors = ARRAY_DICT_INIT;

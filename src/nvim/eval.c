@@ -13305,8 +13305,34 @@ static void f_localtime(typval_T *argvars, typval_T *rettv, FunPtr fptr)
   rettv->vval.v_number = (varnumber_T)time(NULL);
 }
 
+void get_map_lhs(mapblock_T *mp, char_u *lhs)
+{
+  lhs = str2special_save(mp->m_keys, true);
+}
 
-static void get_maparg(typval_T *argvars, typval_T *rettv, int exact)
+void construct_maparg_dict(dict_T *dict, mapblock_T *mp, int buffer_local)
+{
+  char_u *lhs;
+  get_map_lhs(mp, lhs);
+
+  char *const mapmode = map_mode_to_chars(mp->m_mode);
+
+  dict_add_nr_str(dict, "lhs",     0L, lhs);
+  dict_add_nr_str(dict, "rhs",     0L, mp->m_orig_str);
+  dict_add_nr_str(dict, "noremap", mp->m_noremap ? 1L : 0L, NULL);
+  dict_add_nr_str(dict, "expr",    mp->m_expr    ? 1L : 0L, NULL);
+  dict_add_nr_str(dict, "silent",  mp->m_silent  ? 1L : 0L, NULL);
+  dict_add_nr_str(dict, "sid",     (long)mp->m_script_ID, NULL);
+  dict_add_nr_str(dict, "buffer",  (long)buffer_local, NULL);
+  dict_add_nr_str(dict, "nowait",  mp->m_nowait  ? 1L : 0L, NULL);
+  dict_add_nr_str(dict, "mode",    0L, (char_u *)mapmode);
+
+  xfree(lhs);
+  xfree(mapmode);
+}
+
+
+void get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 {
   char_u      *keys;
   char_u      *which;
@@ -13347,33 +13373,19 @@ static void get_maparg(typval_T *argvars, typval_T *rettv, int exact)
   xfree(keys_buf);
 
   if (!get_dict) {
-    /* Return a string. */
-    if (rhs != NULL)
-      rettv->vval.v_string = str2special_save(rhs, FALSE);
-
+    // Return a string.
+    if (rhs != NULL) {
+      rettv->vval.v_string = str2special_save(rhs, false);
+    }
   } else {
     rettv_dict_alloc(rettv);
     if (rhs != NULL) {
       // Return a dictionary.
-      char_u *lhs = str2special_save(mp->m_keys, true);
-      char *const mapmode = map_mode_to_chars(mp->m_mode);
-      dict_T *dict = rettv->vval.v_dict;
-
-      dict_add_nr_str(dict, "lhs",     0L, lhs);
-      dict_add_nr_str(dict, "rhs",     0L, mp->m_orig_str);
-      dict_add_nr_str(dict, "noremap", mp->m_noremap ? 1L : 0L, NULL);
-      dict_add_nr_str(dict, "expr",    mp->m_expr    ? 1L : 0L, NULL);
-      dict_add_nr_str(dict, "silent",  mp->m_silent  ? 1L : 0L, NULL);
-      dict_add_nr_str(dict, "sid",     (long)mp->m_script_ID, NULL);
-      dict_add_nr_str(dict, "buffer",  (long)buffer_local, NULL);
-      dict_add_nr_str(dict, "nowait",  mp->m_nowait  ? 1L : 0L, NULL);
-      dict_add_nr_str(dict, "mode",    0L, (char_u *)mapmode);
-
-      xfree(lhs);
-      xfree(mapmode);
+      construct_maparg_dict(rettv->vval.v_dict, mp, buffer_local);
     }
   }
 }
+
 
 /*
  * "map()" function

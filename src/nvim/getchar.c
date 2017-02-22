@@ -99,11 +99,9 @@ static int block_redo = FALSE;
                        (NORMAL + VISUAL + SELECTMODE + \
                         OP_PENDING)) ? (c1) : ((c1) ^ 0x80))
 
-/*
- * Each mapping is put in one of the 256 hash lists, to speed up finding it.
- */
+// Each mapping is put in one of the 256 hash lists, to speed up finding it.
 static mapblock_T       *(maphash[256]);
-static int maphash_valid = FALSE;
+static int maphash_valid = false;
 
 /*
  * List used for abbreviations.
@@ -1902,13 +1900,14 @@ static int vgetorpeek(int advance)
               setcursor();
               continue;
             }
-            /* Need more chars for partly match. */
-            if (mlen == typebuf.tb_len)
+            // Need more chars for partly match.
+            if (mlen == typebuf.tb_len) {
               keylen = KEYLEN_PART_KEY;
-            else if (max_mlen < mlen)
-              /* no match, may have to check for termcode at
-               * next character */
+            } else if (max_mlen < mlen) {
+              // no match, may have to check for termcode at
+              // next character
               max_mlen = mlen + 1;
+            }
           }
 
           if ((mp == NULL || max_mlen >= mp_match_len)
@@ -4129,16 +4128,21 @@ check_map (
     /* loop over all hash lists */
     for (hash = 0; hash < 256; ++hash) {
       if (abbr) {
-        if (hash > 0)                   /* there is only one list. */
+        // there is only one list.
+        if (hash > 0) {
           break;
-        if (local)
+        }
+        if (local) {
           mp = curbuf->b_first_abbr;
-        else
+        } else {
           mp = first_abbr;
-      } else if (local)
+        }
+      } else if (local) {
         mp = curbuf->b_maphash[hash];
-      else
+      } else {
         mp = maphash[hash];
+      }
+
       for (; mp != NULL; mp = mp->m_next) {
         /* skip entries with wrong mode, wrong length and not matching
          * ones */
@@ -4260,4 +4264,10 @@ static bool typebuf_match_len(const uint8_t *str, int *mlen)
   }
   *mlen = i;
   return str[i] == NUL;  // matched the whole string
+}
+
+
+mapblock_T *get_maphash(int index)
+{
+  return maphash[index];
 }
