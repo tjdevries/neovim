@@ -1297,6 +1297,22 @@ int tv_dict_add_list(dict_T *const d, const char *const key,
   return OK;
 }
 
+int tv_dict_add_partial(dict_T *const d, const char *const key,
+    const size_t key_len, partial_T *const partial)
+{
+  dictitem_T *const item = tv_dict_item_alloc_len(key, key_len);
+
+  item->di_tv.v_lock = VAR_UNLOCKED;
+  item->di_tv.v_type = VAR_PARTIAL;
+  item->di_tv.vval.v_partial = partial;
+  partial->pt_refcount++;
+  if (tv_dict_add(d, item) == FAIL) {
+    tv_dict_item_free(item);
+    return FAIL;
+  }
+  return OK;
+}
+
 /// Add a dictionary entry to dictionary
 ///
 /// @param[out]  d  Dictionary to add entry to.

@@ -13717,6 +13717,63 @@ static void f_rpcnotify(typval_T *argvars, typval_T *rettv, FunPtr fptr)
   rettv->vval.v_number = 1;
 }
 
+// "rpcasync()" function
+static void f_rpcasync(typval_T *argvars, typval_T *rettv, FunPtr fptr)
+{
+  if (check_restricted() || check_secure()) {
+    return;
+  }
+
+  if (argvars[0].v_type != VAR_NUMBER || argvars[0].vval.v_number <= 0) {
+    EMSG2(_(e_invarg2), "Channel id must be a positive integer");
+    return;
+  }
+
+  if (argvars[1].v_type != VAR_STRING) {
+    EMSG2(_(e_invarg2), "Method name must be a string");
+    return;
+  }
+
+  if (argvars[2].v_type != VAR_LIST) {
+    EMSG2(_(e_invarg2), "Argument list must be a list");
+    return;
+  }
+
+  Callback callback;
+  if (!callback_from_typval(&callback, &argvars[3])) {
+    EMSG2(_(e_invarg2), "Callback must be a callback");
+    return;
+  }
+
+  Array args = ARRAY_DICT_INIT;
+  /* for (typval_T *tv = argvars + 2; tv->v_type != VAR_UNKNOWN; tv++) { */
+  /*   ADD(args, vim_to_object(tv)); */
+  /* } */
+
+  Error err = ERROR_INIT;
+  uint64_t request_id  = channel_send_promise(
+      (uint64_t)tv_get_number(&argvars[0]),
+      tv_get_string(&argvars[1]),
+      args,
+      callback,
+      &err);
+
+  if (err.set) {
+    nvim_err_writeln(cstr_as_string(err.msg));
+    goto end;
+  }
+
+  tv_dict_alloc_ret(rettv);
+  tv_dict_add_nr(rettv->vval.v_dict, S_LEN("channel_id"), tv_get_number(&argvars[0]));
+  tv_dict_add_list(rettv->vval.v_dict, S_LEN("args"), argvars[2].vval.v_list);
+  tv_dict_add_nr(rettv->vval.v_dict, S_LEN("request_id"), request_id);
+  tv_dict_add_partial(rettv->vval.v_dict, S_LEN("callback"), argvars[3].vval.v_partial);
+
+end:
+  // Not sure if I need to do this
+  api_free_array(args);
+}
+
 // "rpcrequest()" function
 static void f_rpcrequest(typval_T *argvars, typval_T *rettv, FunPtr fptr)
 {
@@ -22163,7 +22220,7 @@ static inline bool common_job_callbacks(dict_T *vopts, Callback *on_stdout,
                                         Callback *on_stderr, Callback *on_exit)
 {
   if (tv_dict_get_callback(vopts, S_LEN("on_stdout"), on_stdout)
-      &&tv_dict_get_callback(vopts, S_LEN("on_stderr"), on_stderr)
+      && tv_dict_get_callback(vopts, S_LEN("on_stderr"), on_stderr)
       && tv_dict_get_callback(vopts, S_LEN("on_exit"), on_exit)) {
     vopts->dv_refcount++;
     return true;

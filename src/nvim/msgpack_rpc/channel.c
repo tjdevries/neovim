@@ -64,6 +64,7 @@ typedef struct {
   } data;
   uint64_t next_request_id;
   kvec_t(ChannelCallFrame *) call_stack;
+  kvec_t(ChannelCallFrame *) wait_stack;
   kvec_t(WBuffer *) delayed_notifications;
   MultiQueue *events;
 } Channel;
@@ -173,6 +174,53 @@ bool channel_send_event(uint64_t id, const char *name, Array args)
 
   return true;
 }
+
+uint64_t channel_send_promise(uint64_t id,
+                            const char *method_name,
+                            Array args,
+                            Callback cb,
+                            Error *err)
+{
+  Channel *channel = NULL;
+
+  if (!(channel = pmap_get(uint64_t)(channels, id)) || channel->closed) {
+    api_set_error(err, Exception, _("Invalid channel \"%" PRIu64 "\""), id);
+    return 0;
+  }
+
+  incref(channel);
+  uint64_t request_id = channel->next_request_id++;
+  // Send the msgpack-rpc request
+  /* send_request(channel, request_id, method_name, args); */
+
+  // Push the frame
+  /* ChannelCallFrame frame = { request_id, false, false, NIL }; */
+  /* kv_push(channel->call_stack, &frame); */
+  /* channel->pending_requests++; */
+  decref(channel);
+
+  return request_id;
+}
+
+
+void channel_wait_item(uint64_t channel_id,
+    uint64_t request_id,
+    Error *err)
+{
+  Channel *channel = NULL;
+
+  if (!(channel = pmap_get(uint64_t)(channels, channel_id)) || channel->closed) {
+    api_set_error(err, Exception, _("Invalid channel \"%" PRIu64 "\""), channel_id);
+    return;
+  }
+
+  ChannelCallFrame frame = { request_id, false, false, NIL };
+  LOOP_PROCESS_EVENTS_UNTIL(&main_loop, channel->events, -1, frame.returned);
+  (void)kv_pop(channel->call_stack);
+  channel->pending_requests--;
+}
+
+
 
 /// Sends a method call to a channel
 ///
@@ -677,6 +725,7 @@ static Channel *register_channel(ChannelType type, uint64_t id,
   rv->subscribed_events = pmap_new(cstr_t)();
   rv->next_request_id = 1;
   kv_init(rv->call_stack);
+  kv_init(rv->wait_stack);
   kv_init(rv->delayed_notifications);
   pmap_put(uint64_t)(channels, rv->id, rv);
   return rv;

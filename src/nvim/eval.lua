@@ -232,6 +232,7 @@ return {
     resolve={args=1},
     reverse={args=1},
     round={args=1, func="float_op_wrapper", data="&round"},
+    rpcasync={args=4},
     rpcnotify={args=varargs(2)},
     rpcrequest={args=varargs(2)},
     rpcstart={args={1, 2}},
