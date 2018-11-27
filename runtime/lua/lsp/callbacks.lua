@@ -29,6 +29,7 @@
 --
 --  TODO: documentLink/resolve
 
+require('vim.compat')
 local log = require('lsp.log')
 local util = require('nvim.util')
 local lsp_util = require('lsp.util')
