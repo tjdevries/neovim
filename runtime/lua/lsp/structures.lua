@@ -26,7 +26,7 @@ end
 
 structures.DocumentUri = function(args)
   return args
-    or 'file://' .. vim.api.nvim_buf_get_name(0)
+    or lsp_util.get_uri(vim.api.nvim_buf_get_name(0))
 end
 structures.languageId = function(args)
   return args
