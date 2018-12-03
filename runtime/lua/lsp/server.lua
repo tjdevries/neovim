@@ -76,7 +76,8 @@ end
 server.default_callbacks = {
 
   root_uri = function()
-    return 'file://' .. (vim.api.nvim_call_function('getcwd', { }) or '/tmp/')
+    return lsp_util.get_uri(
+      vim.api.nvim_call_function('getcwd', {}) or os.getenv('tmp'))
   end,
 
 }

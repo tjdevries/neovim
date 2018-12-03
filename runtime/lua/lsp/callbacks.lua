@@ -45,6 +45,8 @@ local handle_workspace = require('lsp.handle.workspace')
 local CallbackMapping = setmetatable({}, {})
 local CallbackObject = {}
 
+local unpack = table.unpack or unpack
+
 local method_to_callback_object = function(method, create_new)
   if type(method) ~= 'string' then
     return nil
