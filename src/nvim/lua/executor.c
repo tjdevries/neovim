@@ -646,6 +646,20 @@ nlua_print_error:
   return lua_error(lstate);
 }
 
+static void nlua_push_traceback(lua_State *lstate) {
+  lua_getfield(lstate, LUA_GLOBALSINDEX, "debug");
+  lua_getfield(lstate, -1, "traceback");
+  lua_pushvalue(lstate, 1);
+  lua_pushinteger(lstate, 2);
+  lua_call(lstate, 2, 1);
+}
+
+/// Get the current traceback
+/* static String nlua_get_traceback(lua_State *lstate, Error *err) { */
+/*   nlua_push_trace_back(lstate); */
+/*   return nlua_pop_String(lstate, err); */
+/* } */
+
 /// debug.debug: interaction with user while debugging.
 ///
 /// @param  lstate  Lua interpreter state.
@@ -734,6 +748,9 @@ int nlua_call(lua_State *lstate)
                     &dummy, true, NULL, NULL);
     if (!try_end(&err)) {
       nlua_push_typval(lstate, &rettv, false);
+    } else {
+      nlua_push_traceback(lstate);
+      nlua_print(lstate);
     }
     tv_clear(&rettv);
   });
