@@ -189,7 +189,7 @@ CONFIG = {
     'treesitter': {
         'mode': 'lua',
         'filename': 'treesitter.txt',
-        'section_start_token': '*lua-treesitter*',
+        'section_start_token': '*lua-treesitter-core*',
         'section_order': [
             'treesitter.lua',
             'language.lua',
@@ -209,7 +209,7 @@ CONFIG = {
             else f'Lua module: vim.treesitter.{name.lower()}'),
         'helptag_fmt': lambda name: (
             '*lua-treesitter*'
-            if name.lower() == 'treesitter'
+            if name.lower() == 'lua-treesitter-core'
             else f'*treesitter-{name.lower()}*'),
         'fn_helptag_fmt': lambda fstem, name: f'*{name}()*',
         # 'fn_helptag_fmt': lambda fstem, name: (
