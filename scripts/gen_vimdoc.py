@@ -735,7 +735,11 @@ def extract_from_xml(filename, target, width):
         # Handle Object Oriented style functions here.
         #   We make sure they have "self" in the parameters,
         #   and a parent function
-        if return_type.startswith('function') and len(return_type.split(' ')) >= 2 and any(x[1] == 'self' for x in params):
+        if (
+            return_type.startswith('function')
+            and len(return_type.split(' ')) >= 2
+            and any(x[1] == 'self' for x in params)
+        ):
             split_return = return_type.split(' ')
             name = f'{split_return[1]}:{name}'
 
@@ -825,7 +829,9 @@ def extract_from_xml(filename, target, width):
 
         xrefs.clear()
 
-    fns = collections.OrderedDict(sorted(fns.items(), key = lambda key_item_tuple: key_item_tuple[0].lower()))
+    fns = collections.OrderedDict(
+        sorted(fns.items(), key=lambda key_item_tuple: key_item_tuple[0].lower())
+    )
     deprecated_fns = collections.OrderedDict(sorted(deprecated_fns.items()))
     return (fns, deprecated_fns)
 
