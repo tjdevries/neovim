@@ -768,12 +768,12 @@ static int au_get_grouparg(char_u **argp)
 // If forceit == true: delete entries.
 // If group is not AUGROUP_ALL: only use this group.
 int do_autocmd_event(event_T event,
-                            char_u *pat,
-                            bool once,
-                            int nested,
-                            char_u *cmd,
-                            int forceit,
-                            int group)
+                     char_u *pat,
+                     bool once,
+                     int nested,
+                     char_u *cmd,
+                     int forceit,
+                     int group)
 {
   AutoPat *ap;
   AutoPat **prev_ap;
@@ -1384,12 +1384,12 @@ bool trigger_cursorhold(void) FUNC_ATTR_PURE FUNC_ATTR_WARN_UNUSED_RESULT
 ///
 /// @return true if some commands were executed.
 bool apply_autocmds_group(event_T event,
-                                 char_u *fname,
-                                 char_u *fname_io,
-                                 bool force,
-                                 int group,
-                                 buf_T *buf,
-                                 exarg_T *eap)
+                          char_u *fname,
+                          char_u *fname_io,
+                          bool force,
+                          int group,
+                          buf_T *buf,
+                          exarg_T *eap)
 {
   char_u *sfname = NULL;  // short file name
   char_u *tail;

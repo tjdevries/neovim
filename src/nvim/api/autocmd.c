@@ -462,7 +462,7 @@ void nvim_do_autocmd(Dictionary opts, Error *err)
       }
     } else if (strequal("pattern", k.data)) {
       // STRCPY(fname, v->data.string.data);
-      fname = vim_strsave((char_u*)v->data.string.data);
+      fname = vim_strsave((char_u *)v->data.string.data);
     } else if (strequal("event", k.data)) {
       UNPACK_EVENTS(event_array, v, cleanup)
     } else {
