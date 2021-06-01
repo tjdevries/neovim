@@ -69,6 +69,10 @@ describe('autocmd api', function()
 
       it('should return all groups if no group is specified', function()
         local aus = meths.get_autocmds { events = "InsertEnter" }
+        if #aus ~= 4 then
+          eq({}, aus)
+        end
+
         eq(4, #aus)
       end)
 
