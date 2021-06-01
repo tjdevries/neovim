@@ -61,12 +61,20 @@
 
 
 
+/// Get autocmds that match the requirements passed to {opts}.
+/// group
+/// events
+/// patterns
 Array nvim_get_autocmds(Dictionary opts, Error *err)
   FUNC_API_SINCE(7)
 {
   Array autocmd_list = ARRAY_DICT_INIT;
 
   bool event_set[NUM_EVENTS];
+  for (int i = 0; i < NUM_EVENTS; i++) {
+    event_set[i] = false;
+  }
+
   bool check_event = false;
 
   int group_filter = 0;
